@@ -1,0 +1,66 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Install Qt
+      uses: jurplel/install-qt-action@v3
+      with:
+        version: '6.5.0'
+        host: ${{ matrix.os }}
+        target: 'desktop'
+
+    - name: Build (Linux & macOS)
+      if: matrix.os != 'windows-latest'
+      run: |
+        qmake
+        make
+
+    - name: Build (Windows)
+      if: matrix.os == 'windows-latest'
+      run: |
+        qmake
+        nmake
+
+    - name: Deploy (Linux)
+      if: matrix.os == 'ubuntu-latest'
+      run: |
+        mkdir -p appdir/usr/bin
+        cp FloatingBall appdir/usr/bin/
+        wget -c -nv "https://github.com/probonopd/linuxdeployqt/releases/download/continuous/linuxdeployqt-continuous-x86_64.AppImage"
+        chmod a+x linuxdeployqt-continuous-x86_64.AppImage
+        ./linuxdeployqt-continuous-x86_64.AppImage appdir/usr/bin/FloatingBall -appimage
+
+    - name: Deploy (macOS)
+      if: matrix.os == 'macos-latest'
+      run: |
+        macdeployqt FloatingBall.app -dmg
+
+    - name: Deploy (Windows)
+      if: matrix.os == 'windows-latest'
+      run: |
+        windeployqt release/FloatingBall.exe
+        7z a FloatingBall-windows.zip release/
+
+    - name: Release
+      uses: softprops/action-gh-release@v1
+      if: startsWith(github.ref, 'refs/tags/')
+      with:
+        files: |
+          FloatingBall*.AppImage
+          FloatingBall.dmg
+          FloatingBall-windows.zip
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
