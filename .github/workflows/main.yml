@@ -17,11 +17,23 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
+    - name: Set Qt host
+      id: qt_host
+      run: |
+        if [ "${{ runner.os }}" == "Windows" ]; then
+          echo "host=windows" >> $GITHUB_OUTPUT
+        elif [ "${{ runner.os }}" == "macOS" ]; then
+          echo "host=mac" >> $GITHUB_OUTPUT
+        else
+          echo "host=linux" >> $GITHUB_OUTPUT
+        fi
+      shell: bash
+
     - name: Install Qt
       uses: jurplel/install-qt-action@v3
       with:
         version: '6.5.0'
-        host: ${{ runner.os }}
+        host: ${{ steps.qt_host.outputs.host }}
         target: 'desktop'
 
     - name: Build (Linux & macOS)
