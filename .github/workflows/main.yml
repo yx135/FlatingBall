@@ -21,23 +21,23 @@ jobs:
       uses: jurplel/install-qt-action@v3
       with:
         version: '5.12.2'
-        host: ${{ runner.os }}
+        host: ${{ runner.os == 'Windows' && 'windows' || runner.os == 'macOS' && 'mac' || 'linux' }}
         target: 'desktop'
 
     - name: Configure Qt (macOS)
       if: runner.os == 'macOS'
       run: |
-        echo "$(pwd)/Qt/5.12.2/clang_64/bin" >> $GITHUB_PATH
+        echo "$Qt5_DIR/bin" >> $GITHUB_PATH
 
     - name: Configure Qt (Linux)
       if: runner.os == 'Linux'
       run: |
-        echo "$(pwd)/Qt/5.12.2/gcc_64/bin" >> $GITHUB_PATH
+        echo "$Qt5_DIR/bin" >> $GITHUB_PATH
 
     - name: Configure Qt (Windows)
       if: runner.os == 'Windows'
       run: |
-        echo "$(pwd)/Qt/5.12.2/msvc2017_64/bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+        echo "$env:Qt5_DIR\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
 
     - name: Build (Linux & macOS)
       if: runner.os != 'Windows'
