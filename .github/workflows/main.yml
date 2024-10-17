@@ -17,24 +17,27 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
-    - name: Set Qt host
-      id: qt_host
-      run: |
-        if [ "${{ runner.os }}" == "Windows" ]; then
-          echo "host=windows" >> $GITHUB_OUTPUT
-        elif [ "${{ runner.os }}" == "macOS" ]; then
-          echo "host=mac" >> $GITHUB_OUTPUT
-        else
-          echo "host=linux" >> $GITHUB_OUTPUT
-        fi
-      shell: bash
-
     - name: Install Qt
       uses: jurplel/install-qt-action@v3
       with:
-        version: '6.5.0'
-        host: ${{ steps.qt_host.outputs.host }}
+        version: '5.12.2'
+        host: ${{ runner.os }}
         target: 'desktop'
+
+    - name: Configure Qt (macOS)
+      if: runner.os == 'macOS'
+      run: |
+        echo "$(pwd)/Qt/5.12.2/clang_64/bin" >> $GITHUB_PATH
+
+    - name: Configure Qt (Linux)
+      if: runner.os == 'Linux'
+      run: |
+        echo "$(pwd)/Qt/5.12.2/gcc_64/bin" >> $GITHUB_PATH
+
+    - name: Configure Qt (Windows)
+      if: runner.os == 'Windows'
+      run: |
+        echo "$(pwd)/Qt/5.12.2/msvc2017_64/bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
 
     - name: Build (Linux & macOS)
       if: runner.os != 'Windows'
@@ -45,6 +48,7 @@ jobs:
     - name: Build (Windows)
       if: runner.os == 'Windows'
       run: |
+        call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
         qmake
         nmake
 
