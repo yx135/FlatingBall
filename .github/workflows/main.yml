@@ -5,7 +5,7 @@ on:
     tags:
       - 'v*'
   release:
-    types: [created]
+    types: [created, edited, published]
 
 jobs:
   build:
@@ -21,23 +21,23 @@ jobs:
       uses: jurplel/install-qt-action@v3
       with:
         version: '6.5.0'
-        host: ${{ matrix.os }}
+        host: ${{ runner.os }}
         target: 'desktop'
 
     - name: Build (Linux & macOS)
-      if: matrix.os != 'windows-latest'
+      if: runner.os != 'Windows'
       run: |
         qmake
         make
 
     - name: Build (Windows)
-      if: matrix.os == 'windows-latest'
+      if: runner.os == 'Windows'
       run: |
         qmake
         nmake
 
     - name: Deploy (Linux)
-      if: matrix.os == 'ubuntu-latest'
+      if: runner.os == 'Linux'
       run: |
         mkdir -p appdir/usr/bin
         cp FloatingBall appdir/usr/bin/
@@ -46,12 +46,12 @@ jobs:
         ./linuxdeployqt-continuous-x86_64.AppImage appdir/usr/bin/FloatingBall -appimage
 
     - name: Deploy (macOS)
-      if: matrix.os == 'macos-latest'
+      if: runner.os == 'macOS'
       run: |
         macdeployqt FloatingBall.app -dmg
 
     - name: Deploy (Windows)
-      if: matrix.os == 'windows-latest'
+      if: runner.os == 'Windows'
       run: |
         windeployqt release/FloatingBall.exe
         7z a FloatingBall-windows.zip release/
