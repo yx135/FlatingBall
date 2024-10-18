@@ -1,6 +1,8 @@
 #ifndef FLOATINGBALL_H
 #define FLOATINGBALL_H
 
+
+
 #include <QWidget>
 #include <QPropertyAnimation>
 #include<QDebug>
@@ -30,6 +32,7 @@
 #include <QStackedWidget>
 #include<QFormLayout>
 #include<QPlainTextEdit>
+#include<QSystemTrayIcon>
 
 class FloatingBall : public QWidget
 {
@@ -71,12 +74,18 @@ private:
     void saveSettings();
     void loadSettings();
 
+    //添加系统托盘
+    void createTrayIcon();
+    void toggleVisibility();
+      QSystemTrayIcon*  trayIcon ;
+
 public slots:
-    void takeScreenshot();
-    void handleSingleClick();
-      void showContextMenu(const QPoint &pos);
-    void showSettings();
-    void exitApplication();
+      void takeScreenshot();
+      void handleSingleClick();
+       void showContextMenu(const QPoint &pos);
+      void showSettings();
+      void exitApplication();
+
 };
 
 
