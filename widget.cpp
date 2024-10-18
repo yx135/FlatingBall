@@ -1,5 +1,9 @@
 #include "widget.h"
 #include"aichat.h"
+#include <QMenu>
+#include <QPainter>
+#include <QApplication>
+
 
 
 
@@ -60,8 +64,14 @@ FloatingBall::FloatingBall(QWidget *parent)
 
     // 加载设置
     loadSettings();
-    qDebug()<<m_apiKey;
 
+    //qDebug()<<m_apiKey;
+    //设置窗口为工具窗口
+    setWindowFlags(windowFlags() | Qt::ToolTip);
+    setAttribute(Qt::WA_ShowWithoutActivating);
+    setAttribute(Qt::WA_MacAlwaysShowToolWindow);
+    createTrayIcon();
+    //hide();
 }
 
 void FloatingBall::mousePressEvent(QMouseEvent *event)
@@ -124,7 +134,6 @@ void FloatingBall::toggleExpansion()
 
     if (!isExpanded) {
         // 展开
-        m_originalPos = globalPos; // 保存原始位置
         if (globalPos.x() < screenGeometry.width() / 2) {
             // 在左半边屏幕，向右展开
             setFixedSize(expandedSize);
@@ -132,15 +141,19 @@ void FloatingBall::toggleExpansion()
             // 在右半边屏幕，向左展开
             QPoint newPos = globalPos;
             newPos.setX(globalPos.x() - (expandedSize.width() - collapsedSize.width()));
-            setFixedSize(expandedSize);
             move(newPos);
+            setFixedSize(expandedSize);
         }
         screenshotButton->show();
         aichatButton->show();
     } else {
         // 折叠
+        QPoint newPos = pos();
+        if (globalPos.x() >= screenGeometry.width() / 2) {
+            newPos.setX(newPos.x() + (expandedSize.width() - collapsedSize.width()));
+        }
         setFixedSize(collapsedSize);
-        move(m_originalPos); // 恢复到原始位置
+        move(newPos);
         screenshotButton->hide();
         aichatButton->hide();
     }
@@ -332,4 +345,52 @@ void FloatingBall::loadSettings()
 
     //qDebug() << "加载后：" << m_apiKey;
     //qDebug() << "加载后：" << m_apiEndpoint;
+}
+
+
+//创建系统托盘
+void FloatingBall::createTrayIcon()
+{
+
+    trayIcon = new QSystemTrayIcon(this);
+    
+    // 创建一个类似悬浮球的图标
+    QPixmap pixmap(32, 32);
+    pixmap.fill(Qt::transparent);
+
+    QPainter painter(&pixmap);
+    painter.setRenderHint(QPainter::Antialiasing);
+
+    // 绘制主圆
+    QRadialGradient gradient(16, 16, 16);
+    gradient.setColorAt(0, QColor(100, 100, 255));
+    gradient.setColorAt(1, QColor(50, 50, 200));
+    painter.setBrush(gradient);
+    painter.setPen(Qt::NoPen);
+    painter.drawEllipse(1, 1, 30, 30);
+
+    // 添加高光效果
+    painter.setBrush(QColor(255, 255, 255, 100));
+    painter.drawEllipse(5, 5, 10, 10);
+
+    trayIcon->setIcon(QIcon(pixmap));
+
+    QMenu *trayMenu = new QMenu(this);
+    QAction *showAction = trayMenu->addAction("显示/隐藏");
+    QAction *settingsAction = trayMenu->addAction("设置");
+    QAction *quitAction = trayMenu->addAction("退出");
+
+    connect(showAction, &QAction::triggered, this, &FloatingBall::toggleVisibility);
+    connect(settingsAction, &QAction::triggered, this, &FloatingBall::showSettings);
+    connect(quitAction, &QAction::triggered, qApp, &QCoreApplication::quit);
+
+    trayIcon->setContextMenu(trayMenu);
+    trayIcon->show();
+    qApp->setQuitOnLastWindowClosed(false);
+
+    
+}
+void FloatingBall::toggleVisibility()
+{
+    setVisible(!isVisible());
 }
