@@ -5,6 +5,8 @@ int main(int argc, char *argv[])
 {
     try {
             QApplication a(argc, argv);
+            QApplication::setAttribute(Qt::AA_MacPluginApplication);
+
             FloatingBall w;
             w.show();
             QObject::connect(&a, &QApplication::lastWindowClosed, [&w]() {

@@ -19,6 +19,7 @@
 #include<QDialog>
 #include<QComboBox>
 #include<QLabel>
+#include <QCloseEvent>
 
 class aichat : public QWidget
 {
@@ -60,6 +61,7 @@ private:
     void updateHistoryList();
     void loadChat(const QString &chatId);
     void initmodelist();
+    void closeEvent(QCloseEvent *event) override;
 private slots:
     // ... 其他槽函数 ...
     void handleNetworkError(QNetworkReply::NetworkError error);

@@ -33,6 +33,8 @@
 #include<QFormLayout>
 #include<QPlainTextEdit>
 #include<QSystemTrayIcon>
+#include <QShortcut>
+#include <QHotkey>
 
 class FloatingBall : public QWidget
 {
@@ -54,7 +56,7 @@ protected:
     void resizeEvent(QResizeEvent *event) override;
 
 private:
-
+    
     bool isExpanded;
     QPoint m_dragPosition;
     bool m_isExpanded;
@@ -77,8 +79,9 @@ private:
     //添加系统托盘
     void createTrayIcon();
     void toggleVisibility();
-      QSystemTrayIcon*  trayIcon ;
+    QSystemTrayIcon*  trayIcon ;
 
+    void setupGlobalShortcuts();
 public slots:
       void takeScreenshot();
       void handleSingleClick();
@@ -98,6 +101,8 @@ public:
 
         rubberBand = new QRubberBand(QRubberBand::Rectangle, this);
         rubberBand->setStyleSheet("border: 2px solid red;");
+        setWindowFlags(Qt::Window | Qt::WindowStaysOnTopHint | Qt::X11BypassWindowManagerHint);
+        setAttribute(Qt::WA_ShowWithoutActivating);
     }
 
     ~ScreenshotSelector() {

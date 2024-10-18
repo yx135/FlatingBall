@@ -40,3 +40,22 @@ FORMS += \
 qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
+QMAKE_INFO_PLIST = ./Info.plist
+
+
+# 添加 QHotkey 源文件
+SOURCES += \
+    ./QHotkey/qhotkey.cpp \
+   ./QHotkey/qhotkey_mac.cpp \
+
+# 添加 QHotkey 头文件
+HEADERS += \
+    ./QHotkey/qhotkey.h \
+    ./QHotkey/qhotkey_p.h
+
+# 添加 QHotkey 包含路径
+INCLUDEPATH +=./QHotkey
+
+# 根据平台添加必要的库
+win32: LIBS += -luser32
+macx: LIBS += -framework Carbon

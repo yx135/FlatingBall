@@ -56,6 +56,9 @@ FloatingBall::FloatingBall(QWidget *parent)
         aichat* chatWindow = new aichat(nullptr, m_apiKey, m_apiEndpoint);
         chatWindow->setAttribute(Qt::WA_DeleteOnClose);
         chatWindow->show();
+         // 将 FloatingBall 窗口设置为非活动状态
+    this->clearFocus();
+    this->lower();
     });
     layout->setAlignment(Qt::AlignCenter);
      // 添加右键菜单
@@ -71,6 +74,11 @@ FloatingBall::FloatingBall(QWidget *parent)
     setAttribute(Qt::WA_ShowWithoutActivating);
     setAttribute(Qt::WA_MacAlwaysShowToolWindow);
     createTrayIcon();
+
+    setupGlobalShortcuts();
+    this->activateWindow();
+    this->raise();
+
     //hide();
 }
 
@@ -175,17 +183,22 @@ FloatingBall::~FloatingBall()
 }
 void FloatingBall::closeEvent(QCloseEvent *event)
 {
+     // 检查是否有其他窗口处于活动状态
+    if (QApplication::activeWindow() != this) {
+        event->ignore();
+        return;
+    }
+
     qDebug() << "Close event received";
-    //event->ignore();  // 忽略关闭事件，防止窗口被关闭
     QMessageBox::StandardButton reply;
-      reply = QMessageBox::question(this, "退出确认", "确定要退出程序吗？",
-                                    QMessageBox::Yes|QMessageBox::No);
-      if (reply == QMessageBox::Yes) {
-          event->accept();
-          QApplication::quit();
-      } else {
-          event->ignore();
-        }
+    reply = QMessageBox::question(this, "退出确认", "确定要退出程序吗？",
+                                  QMessageBox::Yes|QMessageBox::No);
+    if (reply == QMessageBox::Yes) {
+        event->accept();
+        QApplication::quit();
+    } else {
+        event->ignore();
+    }
  }
 
 void FloatingBall::takeScreenshot()
@@ -200,6 +213,9 @@ void FloatingBall::takeScreenshot()
         QScreen *screen = QGuiApplication::primaryScreen();
         if (screen) {
             ScreenshotSelector selector;
+            selector.setWindowFlags(selector.windowFlags() | Qt::WindowStaysOnTopHint | Qt::X11BypassWindowManagerHint);
+            selector.setAttribute(Qt::WA_ShowWithoutActivating);
+
             if (selector.exec() == QDialog::Accepted) {
                 QRect selectionRect = selector.getSelectedRect();
                 if (!selectionRect.isNull()) {
@@ -220,8 +236,9 @@ void FloatingBall::takeScreenshot()
             }
         }
 
-        // 显示浮动球
-        this->show();
+        QTimer::singleShot(100, [&selector]() {
+        selector.activateWindow();
+        selector.raise();
         qDebug() << "Timer callback ended";
     });
 
@@ -392,5 +409,46 @@ void FloatingBall::createTrayIcon()
 }
 void FloatingBall::toggleVisibility()
 {
+       qDebug() << "切换可见性";
     setVisible(!isVisible());
+}
+void FloatingBall::setupGlobalShortcuts()
+{
+    qDebug() << "设置快捷键";
+
+    // 使用 QHotkey 替代 QAction
+    QHotkey *toggleHotkey = new QHotkey(QKeySequence("Ctrl+Shift+F"), true, this);
+    connect(toggleHotkey, &QHotkey::activated, this, [this]() {
+        qDebug() << "触发显示/隐藏快捷键";
+        toggleVisibility();
+    });
+
+    QHotkey *screenshotHotkey = new QHotkey(QKeySequence("Ctrl+Shift+S"), true, this);
+    connect(screenshotHotkey, &QHotkey::activated, this, [this]() {
+        qDebug() << "触发截图快捷键";
+        takeScreenshot();
+    });
+
+    QHotkey *chatHotkey = new QHotkey(QKeySequence("Ctrl+Shift+C"), true, this);
+connect(chatHotkey, &QHotkey::activated, this, [this]() {
+    qDebug() << "触发聊天快捷键";
+    aichat* chatWindow = new aichat(nullptr, m_apiKey, m_apiEndpoint);
+    
+    // 显示窗口并激活它
+    chatWindow->show();
+    chatWindow->activateWindow();
+    chatWindow->raise();
+
+    // 使用 QTimer 延迟激活窗口，以确保它显示在最前面
+    QTimer::singleShot(100, [chatWindow]() {
+        chatWindow->activateWindow();
+        chatWindow->raise();
+    });
+});
+    // 检查快捷键是否注册成功
+    // 检查快捷键是否注册成功
+    qDebug() << "显示/隐藏快捷键注册状态:" << (toggleHotkey->isRegistered() ? "成功" : "失败");
+    qDebug() << "截图快捷键注册状态:" << (screenshotHotkey->isRegistered() ? "成功" : "失败");
+    qDebug() << "聊天快捷键注册状态:" << (chatHotkey->isRegistered() ? "成功" : "失败");
+
 }

@@ -2,7 +2,7 @@
 #include<QWidget>
 #include <QApplication> 
 
-aichat::aichat(QWidget *parent,QString apiKey,QString apiEndpoint)
+aichat::aichat(QWidget *parent,QString apiKey,QString apiEndpoint) : QWidget(parent)
 {
     qDebug()<<"开始aichat";
         // 设置窗口大小为屏幕的四分之一宽度，一半高度
@@ -11,7 +11,7 @@ aichat::aichat(QWidget *parent,QString apiKey,QString apiEndpoint)
     this->m_apiEndpoint=apiEndpoint;
     QScreen *screen = QApplication::primaryScreen();
     QRect screenGeometry = screen->geometry();
-    int width = screenGeometry.width() / 8;
+    int width = screenGeometry.width() /6;
     int height = screenGeometry.height() / 2;
     setGeometry(screenGeometry.width() - width, 0, width, height);
 
@@ -81,6 +81,13 @@ aichat::aichat(QWidget *parent,QString apiKey,QString apiEndpoint)
     networkManager = new QNetworkAccessManager(this);
     
     // 创建新对话
+
+   // 设置窗口标志
+    // 修改窗口标志
+    setWindowFlags(Qt::Window | Qt::WindowStaysOnTopHint | Qt::X11BypassWindowManagerHint | Qt::FramelessWindowHint);
+    setAttribute(Qt::WA_TranslucentBackground);
+    setAttribute(Qt::WA_DeleteOnClose);
+    setAttribute(Qt::WA_ShowWithoutActivating);
     createNewChat();
 
 }
@@ -131,16 +138,11 @@ aichat::~aichat()
 
 void aichat::toggleChatWidget()
 {
-    if (chatTextEdit->isVisible()) {
-        chatTextEdit->hide();
-        chatInputLine->hide();
-        sendButton->hide();
+    if (isVisible()) {
+        hide();
     } else {
-        chatTextEdit->show();
-        chatInputLine->show();
-        sendButton->show();
+        show();
     }
-    adjustSize();
 }
 
 void aichat::sendMessage()
@@ -308,4 +310,9 @@ void aichat::initmodelist()
     this->modelist.append("gpt-4o");
     this->modelist.append("claude-sonnet-3.5");
     this->model->addItems(this->modelist);
+}
+void aichat::closeEvent(QCloseEvent *event)
+{
+    event->accept();  // 确保窗口正常关闭
+    // 不要调用 QApplication::quit()
 }
