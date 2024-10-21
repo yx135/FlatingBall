@@ -84,10 +84,10 @@ aichat::aichat(QWidget *parent,QString apiKey,QString apiEndpoint) : QWidget(par
 
    // 设置窗口标志
     // 修改窗口标志
-    setWindowFlags(Qt::Window | Qt::WindowStaysOnTopHint | Qt::X11BypassWindowManagerHint | Qt::FramelessWindowHint);
+    //setWindowFlags(Qt::Window | Qt::WindowStaysOnTopHint | Qt::X11BypassWindowManagerHint | Qt::FramelessWindowHint);
     setAttribute(Qt::WA_TranslucentBackground);
-    setAttribute(Qt::WA_DeleteOnClose);
-    setAttribute(Qt::WA_ShowWithoutActivating);
+    //setAttribute(Qt::WA_DeleteOnClose);
+    //setAttribute(Qt::WA_ShowWithoutActivating);
     createNewChat();
 
 }

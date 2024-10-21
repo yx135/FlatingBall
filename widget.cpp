@@ -3,7 +3,7 @@
 #include <QMenu>
 #include <QPainter>
 #include <QApplication>
-
+#include<screenshotSelector.h>
 
 
 
@@ -205,19 +205,17 @@ void FloatingBall::takeScreenshot()
 {
     qDebug() << "takeScreenshot function started";
 
-    // 隐藏浮动球以避免它出现在截图中
     this->hide();
 
-    QTimer::singleShot(200, this, [this]() {
+    QTimer::singleShot(500, this, [this]() {
         qDebug() << "Timer callback started";
         QScreen *screen = QGuiApplication::primaryScreen();
-        if (screen) {
-            ScreenshotSelector selector;
-            selector.setWindowFlags(selector.windowFlags() | Qt::WindowStaysOnTopHint | Qt::X11BypassWindowManagerHint);
-            selector.setAttribute(Qt::WA_ShowWithoutActivating);
 
-            if (selector.exec() == QDialog::Accepted) {
-                QRect selectionRect = selector.getSelectedRect();
+        if (screen) {
+            ScreenshotSelector *selector = new ScreenshotSelector();
+            selector->setGeometry(screen->geometry());
+            
+            connect(selector, &ScreenshotSelector::screenshotTaken, this, [this, screen, selector](const QRect &selectionRect) {
                 if (!selectionRect.isNull()) {
                     QPixmap screenshot = screen->grabWindow(0, selectionRect.x(), selectionRect.y(),
                                                             selectionRect.width(), selectionRect.height());
@@ -233,13 +231,12 @@ void FloatingBall::takeScreenshot()
                         }
                     }
                 }
-            }
-        }
+                this->show();
+                selector->deleteLater();
+            });
 
-        QTimer::singleShot(100, [&selector]() {
-        selector.activateWindow();
-        selector.raise();
-        qDebug() << "Timer callback ended";
+            selector->show();
+        }
     });
 
     qDebug() << "takeScreenshot function ended";
@@ -365,7 +362,7 @@ void FloatingBall::loadSettings()
 }
 
 
-//创建系统托盘
+//创建系托盘
 void FloatingBall::createTrayIcon()
 {
 
@@ -452,3 +449,7 @@ connect(chatHotkey, &QHotkey::activated, this, [this]() {
     qDebug() << "聊天快捷键注册状态:" << (chatHotkey->isRegistered() ? "成功" : "失败");
 
 }
+
+
+
+

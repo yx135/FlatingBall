@@ -27,10 +27,12 @@ CONFIG += c++11
 SOURCES += \
         aichat.cpp \
         main.cpp \
+        screenshotSelector.cpp \
         widget.cpp
 
 HEADERS += \
         aichat.h \
+        screenshotSelector.h \
         widget.h
 
 FORMS += \

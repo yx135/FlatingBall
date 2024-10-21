@@ -73,6 +73,8 @@ private:
     QString m_apiKey="sk-adfrHgGRxcyfISG90135D10cEc824f14B1A15cA1Cd357a36-73";
     QString m_apiEndpoint="https://oneapidev.onrender.com/v1/chat/completions";
 
+    void captureAndSaveScreenshot(QScreen *screen);
+
     void saveSettings();
     void loadSettings();
 
@@ -92,53 +94,7 @@ public slots:
 };
 
 
-class ScreenshotSelector : public QDialog {
-public:
-    ScreenshotSelector(QWidget *parent = nullptr) : QDialog(parent) {
-        setWindowFlags(Qt::FramelessWindowHint | Qt::WindowStaysOnTopHint);
-        setAttribute(Qt::WA_TranslucentBackground);
-        setGeometry(QApplication::desktop()->screenGeometry());
 
-        rubberBand = new QRubberBand(QRubberBand::Rectangle, this);
-        rubberBand->setStyleSheet("border: 2px solid red;");
-        setWindowFlags(Qt::Window | Qt::WindowStaysOnTopHint | Qt::X11BypassWindowManagerHint);
-        setAttribute(Qt::WA_ShowWithoutActivating);
-    }
-
-    ~ScreenshotSelector() {
-        qDebug() << "ScreenshotSelector destructor called";
-    }
-
-    QRect getSelectedRect() const {
-        return selectedRect;
-    }
-
-protected:
-    void paintEvent(QPaintEvent *event) override {
-        QPainter painter(this);
-        painter.fillRect(rect(), QColor(0, 0, 0, 32));
-    }
-
-    void mousePressEvent(QMouseEvent *event) override {
-        origin = event->pos();
-        rubberBand->setGeometry(QRect(origin, QSize()));
-        rubberBand->show();
-    }
-
-    void mouseMoveEvent(QMouseEvent *event) override {
-        rubberBand->setGeometry(QRect(origin, event->pos()).normalized());
-    }
-
-    void mouseReleaseEvent(QMouseEvent *event) override {
-        selectedRect = QRect(origin, event->pos()).normalized();
-        accept();
-    }
-
-private:
-    QPoint origin;
-    QRect selectedRect;
-    QRubberBand *rubberBand;
-};
 
 class AutoResizingPlainTextEdit : public QPlainTextEdit
     {
