@@ -35,6 +35,7 @@
 #include<QSystemTrayIcon>
 #include <QShortcut>
 #include <QHotkey>
+#include<QClipboard>
 
 class FloatingBall : public QWidget
 {

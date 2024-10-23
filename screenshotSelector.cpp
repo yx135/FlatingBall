@@ -10,12 +10,12 @@ ScreenshotSelector::ScreenshotSelector(QWidget *parent) : QWidget(parent), selec
 void ScreenshotSelector::paintEvent(QPaintEvent *event)
 {
     QPainter painter(this);
-    painter.fillRect(rect(), QColor(0, 0, 0, 100));
+    painter.fillRect(rect(), QColor(0, 0, 0, 0));
 
     if (!selectedRect.isNull())
     {
-        painter.fillRect(selectedRect, QColor(255, 255, 255, 100));
-        painter.setPen(QPen(Qt::red, 2));
+        painter.fillRect(selectedRect, QColor(255, 255, 255, 0));
+        painter.setPen(QPen(Qt::black, 1));
         painter.drawRect(selectedRect);
     }
 }

@@ -219,6 +219,10 @@ void FloatingBall::takeScreenshot()
                 if (!selectionRect.isNull()) {
                     QPixmap screenshot = screen->grabWindow(0, selectionRect.x(), selectionRect.y(),
                                                             selectionRect.width(), selectionRect.height());
+                    // 将截图添加到剪贴板
+            QClipboard *clipboard = QGuiApplication::clipboard();
+            clipboard->setPixmap(screenshot);
+            qDebug() << "截图已复制到剪贴板";
 
                     QString fileName = QFileDialog::getSaveFileName(this, "保存截图",
                                                                     QDir::homePath() + "/screenshot.png",
